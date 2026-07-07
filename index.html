@@ -75,26 +75,67 @@
     const pageInfo = document.getElementById('page-info');
 
     function renderAllPages(pdf) {
-      container.innerHTML = '';
-      const renders = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        renders.push(
-          pdf.getPage(i).then(page => {
-            const dpr = window.devicePixelRatio || 1;
-            const viewport = page.getViewport({ scale: scale * dpr });
-            const canvas = document.createElement('canvas');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.style.height = (viewport.height / dpr) + 'px';
-            canvas.style.width = (viewport.width / dpr) + 'px';
-            container.appendChild(canvas);
-            return page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-          })
-        );
-      }
-      pageInfo.textContent = `${pdf.numPages} pages`;
-      return Promise.all(renders);
-    }
+  container.innerHTML = '';
+  const renders = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    renders.push(
+      pdf.getPage(i).then(page => {
+        const dpr = window.devicePixelRatio || 1;
+        const viewport = page.getViewport({ scale: scale * dpr });
+        const cssViewport = page.getViewport({ scale });
+
+        // Wrapper holds both canvas and annotation layer
+        const wrapper = document.createElement('div');
+        wrapper.className = 'page-wrapper';
+        wrapper.style.width = cssViewport.width + 'px';
+        wrapper.style.height = cssViewport.height + 'px';
+
+        // Canvas
+        const canvas = document.createElement('canvas');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.style.height = cssViewport.height + 'px';
+        canvas.style.width = cssViewport.width + 'px';
+
+        // Annotation layer
+        const annotationDiv = document.createElement('div');
+        annotationDiv.className = 'annotationLayer';
+        annotationDiv.style.width = cssViewport.width + 'px';
+        annotationDiv.style.height = cssViewport.height + 'px';
+
+        wrapper.appendChild(canvas);
+        wrapper.appendChild(annotationDiv);
+        container.appendChild(wrapper);
+
+        const renderContext = {
+          canvasContext: canvas.getContext('2d'),
+          viewport
+        };
+
+        return page.render(renderContext).promise.then(() => {
+          return page.getAnnotations();
+        }).then(annotations => {
+          pdfjsLib.AnnotationLayer.render({
+            viewport: cssViewport.clone({ dontFlip: false }),
+            div: annotationDiv,
+            annotations,
+            page,
+            linkService: {
+              getDestinationHash: dest => dest,
+              navigateTo: dest => {},
+              getAnchorUrl: url => url,
+              setHash: () => {},
+              executeNamedAction: () => {},
+            },
+            renderInteractiveForms: false
+          });
+        });
+      })
+    );
+  }
+  pageInfo.textContent = `${pdf.numPages} pages`;
+  return Promise.all(renders);
+}
 
     pdfjsLib.getDocument(url).promise.then(pdf => {
       pdfDoc = pdf;
