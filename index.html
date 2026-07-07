@@ -80,10 +80,13 @@
       for (let i = 1; i <= pdf.numPages; i++) {
         renders.push(
           pdf.getPage(i).then(page => {
-            const viewport = page.getViewport({ scale });
+            const dpr = window.devicePixelRatio || 1;
+            const viewport = page.getViewport({ scale: scale * dpr });
             const canvas = document.createElement('canvas');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            canvas.style.height = (viewport.height / dpr) + 'px';
+            canvas.style.width = (viewport.width / dpr) + 'px';
             container.appendChild(canvas);
             return page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
           })
