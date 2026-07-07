@@ -10,6 +10,7 @@
       height: 100%;
       overflow: hidden;
       background: #404040;
+      font-family: sans-serif;
     }
     iframe {
       display: block;
@@ -20,9 +21,62 @@
       top: 0;
       left: 0;
     }
+    #mobile-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+    #mobile-view h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    #mobile-view p {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    #mobile-view a {
+      background: white;
+      color: #404040;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    #mobile-view a:hover {
+      background: #e0e0e0;
+    }
   </style>
 </head>
 <body>
-  <iframe src="EDintzner2026.pdf"></iframe>
+
+  <!-- Desktop: fullscreen iframe -->
+  <iframe id="desktop-view" src="EDintzner2026.pdf"></iframe>
+
+  <!-- Mobile: friendly landing page -->
+  <div id="mobile-view">
+    <h1>Analytical Solutions to Foundational Ordinary and Partial Differential Equation Models of Biological Systems</h1>
+    <p>PDF previews are not supported on mobile browsers.<br/>Tap below to open the paper.</p>
+    <a href="EDintzner2026.pdf" target="_blank">Open PDF</a>
+  </div>
+
+  <script>
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      document.getElementById('desktop-view').style.display = 'none';
+      document.getElementById('mobile-view').style.display = 'flex';
+    }
+  </script>
+
 </body>
 </html>
